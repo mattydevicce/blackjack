@@ -77,7 +77,36 @@ $(function(){
     return $('svg').append(img);
   }
 
-  function makingTheSvg(singleCardArray, xcard, ycard, xnum1, ynum1, xsuit, ysuit, cardClass) {
+  function makeSvgCard(xcoord, ycoord, cardClass) {
+    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttributeNS(null,'height','70');
+    rect.setAttributeNS(null,'width','50');
+    rect.setAttributeNS(null,'x', xcoord);
+    rect.setAttributeNS(null,'y', ycoord);
+    rect.setAttributeNS(null, 'rx', '5');
+    rect.setAttributeNS(null, 'ry', '5');
+    rect.setAttributeNS(null, 'fill', '#FFFFFF');
+    rect.setAttributeNS(null, 'stroke', '#000000');
+    rect.setAttributeNS(null, 'stroke-width', '4');
+    rect.setAttributeNS(null, 'visibility', 'visible');
+    rect.setAttributeNS(null, 'class', cardClass + '-card')
+    return $('svg').append(rect);
+  }
+
+  function makeSvgNumber(number, xcoord, ycoord, cardClass) {
+    var num = document.createElementNS('http://www.w3.org/2000/svg','text');
+    num.textContent = number;
+    num.setAttributeNS(null, 'class', cardClass + '-number');
+    num.setAttributeNS(null, 'x', xcoord);
+    num.setAttributeNS(null, 'y', ycoord);
+    num.setAttributeNS(null, 'font-size', '17');
+    num.setAttributeNS(null, 'fill', 'black');
+    num.setAttributeNS(null, 'visibility', 'visible');
+
+    return $('svg').append(num);
+  }
+
+  function makingTheSvg(singleCardArray, xcard, ycard, xnum, ynum, xsuit, ysuit, cardClass) {
     // This function will make the elements and tags of the svg and put them where
     // Chaning the card number to face value
     var card = singleCardArray[1] + 2;
@@ -96,16 +125,9 @@ $(function(){
         break;
     }
 
-    // SE
-    var b = $('<rect class="' + cardClass + '-card" x=' + xcard + ' y=' + ycard + ' rx="5" ry="5" width="50" height="70" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>');
-    var c = $('<text class="' + cardClass + '-number" x=' + xnum1 + ' y=' + ynum1 + ' font-size="17" fill="black">' + card + '</text>');
-    var d = $('<text x=' + (xnum1+28) + ' y=' + (ynum1 + 40) + ' font-size="17" fill="black">' + card + '</text>');
-    console.log(b); 
-    console.log(c); 
-    console.log(d); 
-    $('svg').append(b);
-    $('svg').append(c);
-    $('svg').append(d);
+    makeSvgCard(xcard,ycard,cardClass);
+    makeSvgNumber(card, xnum, ynum, cardClass);
+    makeSvgNumber(card, xnum+28, ynum+40, cardClass);
     makeSvgSuit(singleCardArray[0], xsuit, ysuit, cardClass);
   }
   
@@ -136,22 +158,54 @@ $(function(){
     svg.append(b);
   }
 
-  // Function doesnt work... probably because of something I missed...
-  // function shiftTheCard(cardElement, numberElement, suitElement) {
-  //   // This function is to take the last card played and return an object with
-  //   // coordinates of a new card
-  //   return {xCoordCard: (parseInt(cardElement.attr('x'))+60), cardX, yCoordCard: cardElement.attr('y'), xCoordNum: (parseInt(numberElement.attr('x'))+60),
-  //           yCoordNum: parseInt(numberElement.attr('y')), xCoordSuit: (parseInt(suitElement.attr('x'))+60), yCoordSuit: parseInt(suitElement.attr('y'))};
-  // }
+  function displayScore(cardArray, coords, scoreClass) {
+    var totalScore = getScore(cardArray);
 
+    var s = document.createElementNS('http://www.w3.org/2000/svg','text');
+    s.textContent = totalScore;
+    s.setAttributeNS(null, 'class', scoreClass);
+    s.setAttributeNS(null, 'x', coords['xCoord']);
+    s.setAttributeNS(null, 'y', coords['yCoord']);
+    s.setAttributeNS(null, 'font-size', '32');
+    s.setAttributeNS(null, 'fill', 'black');
+    s.setAttributeNS(null, 'visibility', 'visible');
 
+    return $('svg').append(s);
+  }
+
+  function getScore(cardArray) {
+    var total = 0;
+    var cardNumbers = [];
+    cardArray.forEach(function(element) {
+      cardNumbers.push(element[1]);
+    })
+    cardNumbers.sort(function(a, b){return a-b})
+    console.log(cardNumbers);
+    cardNumbers.forEach(function(element) {
+      var cardWorth = element + 2;
+      if ( cardWorth > 10 && cardWorth < 14) {
+        cardWorth = 10;
+      } else if (cardWorth == 14) {
+        if ((cardWorth + total) > 21) {
+          cardWorth = 1;
+        } else {
+          cardWorth = 11;
+        }
+      }
+      console.log(cardWorth);
+      total += cardWorth;
+    })
+    return total
+  }
   // Want to play a game?
   function playGame(newDeck) {
 
     var shoeDeck   = shuffle(splitDeckToSuits(newDeck))
     var playerDeck = [];
     var dealerDeck = [];
-    
+    var bust = false;
+    var playerScore = 0;
+    var computerScore = 0;
 
     // I would have made this dry but the mix of jQuery and svg do not mix well..
     var coordinates = {dealerCard1: {xCoordCard: 80,   yCoordCard: 25,  xCoordNum: 84,   yCoordNum: 45,  xCoordSuit: 90,   yCoordSuit: 45},
@@ -165,7 +219,9 @@ $(function(){
                        playerCard4: {xCoordCard: 260,  yCoordCard: 160, xCoordNum: 264,  yCoordNum: 180, xCoordSuit: 270,  yCoordSuit: 180},
                        playerCard5: {xCoordCard: 320,  yCoordCard: 160, xCoordNum: 324,  yCoordNum: 180, xCoordSuit: 330,  yCoordSuit: 180},
                        hitMe:       {xCoordBG: 70,  yCoordBG:  280, xCoordText: 77,  yCoordText: 308},
-                       stay:        {xCoordBG: 150, yCoordBG:  280, xCoordText: 163, yCoordText: 308}};
+                       stay:        {xCoordBG: 150, yCoordBG:  280, xCoordText: 163, yCoordText: 308},
+                       playerScoordinates : {xCoord: 20, yCoord: 210},
+                       computScoordinates : {xCoord: 30, yCoord: 50}};
 
 
     // Putting cards in hands and displaying them
@@ -187,10 +243,6 @@ $(function(){
     playerDeck.push(playerCardDealt1);
     playerDeck.push(playerCardDealt2);
     dealerDeck.push(dealerCardDealt1);
-    dealerDeck.push(dealerCardDealt2);
-
-    // Need to update the graphics which this function will do so I can incorporate
-    // clicks on the buttons
 
     $("#cont").html($("#cont").html());
     var hitMe = $("#hit");
@@ -200,15 +252,21 @@ $(function(){
     hitMe.on("click", function() {
       var cardToDealString = 'playerCard' + cardToDeal.toString();
       var playerCardDealHit = shoeDeck.pop();
-      console.log(cardToDealString)
+      playerDeck.push(playerCardDealHit);
       cardToDeal += 1;
-      // var numberOfCardsPlayed = document.getElementsByClassName("player-card").length;
-      // var lastCardLayed   = $(".player-card").last();
-      // var lastSuitLayed   = $(".player").last();
-      // var lastNumberLayed = document.getElementsByClassName("player-number");
-
       displayACard(playerCardDealHit, coordinates[cardToDealString], 'player');
+      document.getElementsByClassName("player-score")[0].childNodes[0].nodeValue = getScore(playerDeck);
     })
+    // Making the button not function if they bust
+    if (bust) {
+      hitMe.off("click");
+    }
+
+    // Need to get the score to display
+
+    console.log(coordinates['playerScoordinates'])
+
+    displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
   }
 
   playGame(deckOfCards());
