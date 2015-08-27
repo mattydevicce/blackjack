@@ -185,7 +185,7 @@ $(function(){
       if ( cardWorth > 10 && cardWorth < 14) {
         cardWorth = 10;
       } else if (cardWorth == 14) {
-        if ((cardWorth + total) > 21) {
+        if ((11 + total) > 21) {
           cardWorth = 1;
         } else {
           cardWorth = 11;
@@ -195,6 +195,8 @@ $(function(){
     })
     return total
   }
+
+  function playBlackjackForDealer(cards){}
   // Want to play a game?
   function playGame(newDeck) {
 
@@ -202,6 +204,9 @@ $(function(){
     var playerDeck = [];
     var dealerDeck = [];
     var bust = false;
+    var stay = false;
+    var blackjackPlayer = false;
+    var blackjackDealer = false;
     var playerScore = 0;
     var computerScore = 0;
 
@@ -219,7 +224,7 @@ $(function(){
                        hitMe:       {xCoordBG: 70,  yCoordBG:  280, xCoordText: 77,  yCoordText: 308},
                        stay:        {xCoordBG: 150, yCoordBG:  280, xCoordText: 163, yCoordText: 308},
                        playerScoordinates : {xCoord: 20, yCoord: 210},
-                       dealerScoordinates : {xCoord: 30, yCoord: 70}};
+                       dealerScoordinates : {xCoord: 20, yCoord: 70}};
 
 
     // Putting cards in hands and displaying them
@@ -233,7 +238,6 @@ $(function(){
     displayACard(playerCardDealt2, coordinates['playerCard2'], 'player');
     
     var dealerCardDealt2 = shoeDeck.pop();
-    displayABlankCard(coordinates['dealerCard2'], 'dealer');  
 
     var displayButton = displayAButton(coordinates['hitMe'], 'Hit me', 'hit');
     var displayButton = displayAButton(coordinates['stay'], 'Stay', 'stay')
@@ -242,12 +246,33 @@ $(function(){
     playerDeck.push(playerCardDealt2);
     dealerDeck.push(dealerCardDealt1);
 
+    // Going to check if anyone got blackjack on the deal
+    dealerDeck.push(dealerCardDealt2);
+    if (getScore(dealerDeck) == 21 && getScore(playerDeck) == 21){
+      console.log('blackjack... tie');
+      blackjackDealer = true;
+      blackjackPlayer = true;
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');    
+    } else if (getScore(dealerDeck) == 21) {
+      console.log('dealer wins')
+      blackjackDealer = true;
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');      
+    } else if (getScore(playerDeck) == 21) {
+      console.log('player wins')
+      blackjackPlayer = true;
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');            
+    } else {
+      dealerDeck.pop();
+      displayABlankCard(coordinates['dealerCard2'], 'dealer');  
+    }
+
+
     $("#cont").html($("#cont").html());
-    var hitMe = $("#hit");
-    var stay  = $("#stay");
+    var hitMeButton = $("#hit");
+    var stayButton  = $("#stay");
 
     var cardToDeal = 3;
-    hitMe.on("click", function() {
+    hitMeButton.on("click", function() {
       var cardToDealString = 'playerCard' + cardToDeal.toString();
       var playerCardDealHit = shoeDeck.pop();
       playerDeck.push(playerCardDealHit);
@@ -255,18 +280,24 @@ $(function(){
       displayACard(playerCardDealHit, coordinates[cardToDealString], 'player');
       document.getElementsByClassName("player-score")[0].childNodes[0].nodeValue = getScore(playerDeck);
       console.log(getScore(playerDeck))
+    })
+
+    stayButton.on("click", function() {
+      stay = true;
+    })
+    $("#cont").on("click", function() {
       if (getScore(playerDeck) > 21) {
         bust = true;
       }
-      // Making the button not function if they bust
-      if (bust) {
-        hitMe.unbind("click");
+      if (bust || stay || blackjackDealer || blackjackPlayer) {
+        hitMeButton.unbind("click");
       }
     })
+    // Making the button not function if they bust
     displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
     displayScore(dealerDeck, coordinates['dealerScoordinates'], 'dealer-score');
 
-    
+
   }
 
   playGame(deckOfCards());
