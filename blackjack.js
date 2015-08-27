@@ -180,7 +180,6 @@ $(function(){
       cardNumbers.push(element[1]);
     })
     cardNumbers.sort(function(a, b){return a-b})
-    console.log(cardNumbers);
     cardNumbers.forEach(function(element) {
       var cardWorth = element + 2;
       if ( cardWorth > 10 && cardWorth < 14) {
@@ -192,7 +191,6 @@ $(function(){
           cardWorth = 11;
         }
       }
-      console.log(cardWorth);
       total += cardWorth;
     })
     return total
@@ -221,7 +219,7 @@ $(function(){
                        hitMe:       {xCoordBG: 70,  yCoordBG:  280, xCoordText: 77,  yCoordText: 308},
                        stay:        {xCoordBG: 150, yCoordBG:  280, xCoordText: 163, yCoordText: 308},
                        playerScoordinates : {xCoord: 20, yCoord: 210},
-                       computScoordinates : {xCoord: 30, yCoord: 50}};
+                       dealerScoordinates : {xCoord: 30, yCoord: 70}};
 
 
     // Putting cards in hands and displaying them
@@ -256,17 +254,19 @@ $(function(){
       cardToDeal += 1;
       displayACard(playerCardDealHit, coordinates[cardToDealString], 'player');
       document.getElementsByClassName("player-score")[0].childNodes[0].nodeValue = getScore(playerDeck);
+      console.log(getScore(playerDeck))
+      if (getScore(playerDeck) > 21) {
+        bust = true;
+      }
+      // Making the button not function if they bust
+      if (bust) {
+        hitMe.unbind("click");
+      }
     })
-    // Making the button not function if they bust
-    if (bust) {
-      hitMe.off("click");
-    }
-
-    // Need to get the score to display
-
-    console.log(coordinates['playerScoordinates'])
-
     displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
+    displayScore(dealerDeck, coordinates['dealerScoordinates'], 'dealer-score');
+
+    
   }
 
   playGame(deckOfCards());
