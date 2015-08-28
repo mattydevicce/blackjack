@@ -222,7 +222,7 @@ $(function(){
       return
     } else if (currentScore >= 17) {
       console.log("Dealer score is " + currentScore)
-      return gameOver
+      return
     } else {
       newCard = shoe.pop();
       displayACard(newCard, coords[currentCard], 'dealer')
@@ -235,16 +235,15 @@ $(function(){
   // Want to play a game?
   function playGame(newDeck) {
     // Initialize variables
-    var shoeDeck   = shuffle(splitDeckToSuits(newDeck))
+    var shoeDeck   = shuffle(newDeck)
     var playerDeck = [];
     var dealerDeck = [];
     var bust = false;
     var stay = false;
     var blackjackPlayer = false;
     var blackjackDealer = false;
-    var playerScore = 0;
-    var computerScore = 0;
     var gameOver = false;
+    var winner = ''
 
     // I would have made this dry but the mix of jQuery and svg do not mix well..
     var coordinates = {dealerCard1: {xCoordCard: 80,   yCoordCard: 25,  xCoordNum: 84,   yCoordNum: 45,  xCoordSuit: 90,   yCoordSuit: 45},
@@ -253,8 +252,9 @@ $(function(){
                        playerCard2: {xCoordCard: 140,  yCoordCard: 160, xCoordNum: 144,  yCoordNum: 180, xCoordSuit: 150,  yCoordSuit: 180},
                        hitMe:       {xCoordBG: 70,  yCoordBG:  280, xCoordText: 77,  yCoordText: 308},
                        stay:        {xCoordBG: 150, yCoordBG:  280, xCoordText: 163, yCoordText: 308},
-                       playerScoordinates : {xCoord: 20, yCoord: 210},
-                       dealerScoordinates : {xCoord: 20, yCoord: 70}};
+                       playerScoordinates: {xCoord: 20,  yCoord: 210},
+                       dealerScoordinates: {xCoord: 20,  yCoord: 70},
+                       newGameCoordinates: {xCoord: 220, yCoord: 280, xCoordText: 230, yCoordText: 308}};
 
 
     // Putting cards in hands and displaying them
@@ -269,33 +269,37 @@ $(function(){
     
     var dealerCardDealt2 = shoeDeck.pop();
 
-    var displayButton = displayAButton(coordinates['hitMe'], 'Hit me', 'hit');
-    var displayButton = displayAButton(coordinates['stay'], 'Stay', 'stay')
+    displayAButton(coordinates['hitMe'], 'Hit me', 'hit');
+    displayAButton(coordinates['stay'], 'Stay', 'stay')
 
     playerDeck.push(playerCardDealt1);
     playerDeck.push(playerCardDealt2);
     dealerDeck.push(dealerCardDealt1);
 
+    displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
+    displayScore(dealerDeck, coordinates['dealerScoordinates'], 'dealer-score');
     // Going to check if anyone got blackjack on the deal
     dealerDeck.push(dealerCardDealt2);
     if (getScore(dealerDeck) == 21 && getScore(playerDeck) == 21){
-      console.log('blackjack... tie');
+      winner = 'blackjack all around... tie';
       blackjackDealer = true;
       blackjackPlayer = true;
+      gameOver = true;
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
     } else if (getScore(dealerDeck) == 21) {
-      console.log('dealer wins')
+      winner ='Blackjack for dealer, dealer wins';
       blackjackDealer = true;
+      gameOver = true;
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');          
     } else if (getScore(playerDeck) == 21) {
-      console.log('player wins')
+      winner = 'Blackjack for player, player wins';
       blackjackPlayer = true;
+      gameOver = true;
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');               
     } else {
       dealerDeck.pop();
       displayABlankCard(coordinates['dealerCard2'], 'dealer');  
     }
-
 
     $("#cont").html($("#cont").html());
 
@@ -304,40 +308,46 @@ $(function(){
 
     // Hit me actions
     hitMeButton.on("click",function(){
-      if (getScore(playerDeck) == 21) {
+      // else update coordinates object with new card and display it
+      var playerCardDealHit = shoeDeck.pop();
+      playerDeck.push(playerCardDealHit);
+      var currentPlayerCard = 'playerCard' + (playerDeck.length).toString();
+      var previousPlayerCard = 'playerCard' + (playerDeck.length-1).toString();
+      var previousPlayerCardCoordinates = coordinates[previousPlayerCard]
+      var currentPlayerCardCoordinates = {};
+      
+      // This is just so you can have infinite cards and it will append the next
+      // one nicely untill the canvas is filled... so we can increase the size
+      // of the canvas
+      for(key in previousPlayerCardCoordinates) {
+        if (key[0] == 'x') {
+          currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key] + 60;
+        } else {
+          currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key];
+        }
+      }
+      coordinates[currentPlayerCard] = currentPlayerCardCoordinates;
+      displayACard(playerCardDealHit, coordinates[currentPlayerCard], 'player');
+      // end the display scaling
+
+      document.getElementsByClassName("player-score")[0].childNodes[0].nodeValue = getScore(playerDeck);
+      if ( getScore(playerDeck) == 21) {
         // If the initial deal is already 21.. make it so buttons dont work
-        console.log('blackjack player');
-        blackjackPlayer = true;
+        playerDeck.push(playerCardDealt2);
+        displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
         hitMeButton.off("click");
         stayButton.off("click");
-        gameOver = true;
-      } else {
-        // else update coordinates object with new card and display it
-        var playerCardDealHit = shoeDeck.pop();
-        playerDeck.push(playerCardDealHit);
-        var currentPlayerCard = 'playerCard' + (playerDeck.length).toString();
-        var previousPlayerCard = 'playerCard' + (playerDeck.length-1).toString();
-        var previousPlayerCardCoordinates = coordinates[previousPlayerCard]
-        var currentPlayerCardCoordinates = {};
-        for(key in previousPlayerCardCoordinates) {
-          if (key[0] == 'x') {
-            currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key] + 60;
-          } else {
-            currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key];
-          }
-        }
-        coordinates[currentPlayerCard] = currentPlayerCardCoordinates;
-        console.log(coordinates)
-        displayACard(playerCardDealHit, coordinates[currentPlayerCard], 'player');
-        document.getElementsByClassName("player-score")[0].childNodes[0].nodeValue = getScore(playerDeck);
-      }
+        playBlackjackForDealer(shoeDeck, dealerDeck, coordinates);       
+      } 
       if (getScore(playerDeck) > 21) {
         bust = true;
+        winner = 'Player busts, computer wins'
         dealerDeck.push(dealerCardDealt2);
         displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
         document.getElementsByClassName("dealer-score")[0].childNodes[0].nodeValue = getScore(dealerDeck);
         hitMeButton.off("click");
         stayButton.off("click");
+        gameOver = true;
       }
     })
 
@@ -346,21 +356,28 @@ $(function(){
       dealerDeck.push(dealerCardDealt2);
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer'); 
       playBlackjackForDealer(shoeDeck, dealerDeck, coordinates);
+      gameOver = true;
       stayButton.off("click");
       hitMeButton.off("click");
     })
-    // Making the button not function if they bust
-    displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
-    displayScore(dealerDeck, coordinates['dealerScoordinates'], 'dealer-score');
 
-    $("body").on("click", function() {
-      if (gameOver) {
-        console.log(shoeDeck);
-      }
+    if (gameOver) {
+      hitMeButton.off("click");
+      stayButton.off("click");
+    }
+    $("cont").on("click", function() {
+      alert("game over")
     })
+
   }
-
-  playGame(deckOfCards());
-
+  // I need a start the game button.. maybe using jqueery
+  startGameButton = $("<div id='start-game-button'></div>");
+  startGameText   = $("<div id='start-game-text'>Start Game</div>");
+  startGameButton.append(startGameText);
+  $(".title").append(startGameButton);
+  // $("body").html($("body").html());
+  startGameButton.on("click", function(event) {
+  })
+  playGame(splitDeckToSuits(deckOfCards()));
 
 })

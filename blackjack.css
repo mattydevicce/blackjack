@@ -1,0 +1,21 @@
+#start-game-button {
+  background-color: green;
+  width: 50px;
+  height: 50px;
+  float: left;
+  margin-left: 50px;
+  margin-top: 15px;
+  border: 2px solid black;
+  border-radius: 50%;
+}
+
+#start-game-text {
+  font-size: 0.8em;
+  margin-left: 10px;
+  margin-top: 7px;
+  color: white;
+}
+
+h1 {
+  float: left;
+}
