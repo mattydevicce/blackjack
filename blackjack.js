@@ -1,4 +1,5 @@
 $(function(){
+  var totalScore = [0,0];
   function deckOfCards() {
     // This function just creates an initial deck
     // of 52 cards and returns the array of all cards
@@ -196,6 +197,35 @@ $(function(){
     return total
   }
 
+  function getWinner(winner, playerScore, dealerScore) {
+    var score = [];
+    if (winner != '') {
+      alert(winner);
+      return
+    } else if (playerScore > 21) {
+      alert("Player busts.. dealer wins");
+      score.push(0);
+      score.push(1);
+    } else if (dealerScore > 21) {
+      alert("Dealer busts.. player wins");
+      score.push(1);
+      score.push(0);
+    }
+    else if (playerScore > dealerScore) {
+      alert("Player wins with " + playerScore);
+      score.push(1);
+      score.push(0);
+    } else if (dealerScore > playerScore) {
+      alert("Dealer wins with " + dealerScore);
+      score.push(0);
+      score.push(1);
+    } else {
+      alert("Tie game with " + playerScore + " all around");
+      return
+    }
+    return score
+  }
+
   function playBlackjackForDealer(shoe, cards, coords){
     
     var currentScore = getScore(cards);
@@ -234,6 +264,7 @@ $(function(){
   }
   // Want to play a game?
   function playGame(newDeck) {
+    startGameButton.off("click");
     // Initialize variables
     var shoeDeck   = shuffle(newDeck)
     var playerDeck = [];
@@ -243,7 +274,19 @@ $(function(){
     var blackjackPlayer = false;
     var blackjackDealer = false;
     var gameOver = false;
-    var winner = ''
+    var winner = '';
+    var playerScore = 0;
+    var dealerScore = 0;
+
+    if (document.getElementsByClassName("dealer-score")[0]) {
+      document.getElementsByClassName("dealer-score")[0].remove();
+    };
+    if (document.getElementsByClassName("player-score")[0]) {
+      document.getElementsByClassName("player-score")[0].remove();
+    };
+    if (document.getElementsByClassName("player-card")) {
+      var bs =  document.getElementsByClassName("player-card")[0]
+    }
 
     // I would have made this dry but the mix of jQuery and svg do not mix well..
     var coordinates = {dealerCard1: {xCoordCard: 80,   yCoordCard: 25,  xCoordNum: 84,   yCoordNum: 45,  xCoordSuit: 90,   yCoordSuit: 45},
@@ -286,16 +329,19 @@ $(function(){
       blackjackPlayer = true;
       gameOver = true;
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
+      getWinner(winner);
     } else if (getScore(dealerDeck) == 21) {
       winner ='Blackjack for dealer, dealer wins';
       blackjackDealer = true;
       gameOver = true;
-      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');          
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
+      getWinner(winner);          
     } else if (getScore(playerDeck) == 21) {
       winner = 'Blackjack for player, player wins';
       blackjackPlayer = true;
       gameOver = true;
-      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');               
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer'); 
+      getWinner(winner);              
     } else {
       dealerDeck.pop();
       displayABlankCard(coordinates['dealerCard2'], 'dealer');  
@@ -348,6 +394,7 @@ $(function(){
         hitMeButton.off("click");
         stayButton.off("click");
         gameOver = true;
+        getWinner(winner, getScore(playerDeck), getScore(dealerDeck));
       }
     })
 
@@ -359,11 +406,14 @@ $(function(){
       gameOver = true;
       stayButton.off("click");
       hitMeButton.off("click");
+      getWinner(winner, getScore(playerDeck), getScore(dealerDeck));
     })
 
     if (gameOver) {
       hitMeButton.off("click");
       stayButton.off("click");
+      document.getElementsByClassName("dealer-score")[0].childNodes[0].nodeValue = getScore(dealerDeck);      
+      getWinner(winner, getScore(playerDeck), getScore(dealerDeck));
     }
     $("cont").on("click", function() {
       alert("game over")
@@ -377,7 +427,7 @@ $(function(){
   $(".title").append(startGameButton);
   // $("body").html($("body").html());
   startGameButton.on("click", function(event) {
+    playGame(splitDeckToSuits(deckOfCards()));
   })
-  playGame(splitDeckToSuits(deckOfCards()));
 
 })
