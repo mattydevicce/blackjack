@@ -16,6 +16,24 @@
   text-align: center;
 }
 
+#redeal-button {
+  background-color: red;
+  width: 50px;
+  height: 50px;
+  float: left;
+  margin-left: 25px;
+  margin-top: 15px;
+  border: 2px solid black;
+  border-radius: 50%;  
+}
+
+#redeal-button-text {
+  font-size: 0.8em;
+  margin-top: 15px;
+  color: white;
+  text-align: center;  
+}
+
 h1 {
   float: left;
 }
