@@ -297,6 +297,7 @@ $(function(){
     var playerDeck = [];
     var dealerDeck = [];
     var stay = false;
+    var blackjack = false;
     var winner = '';
     var playerScore = 0;
     var dealerScore = 0;
@@ -340,35 +341,45 @@ $(function(){
     // Going to check if anyone got blackjack on the deal
     dealerDeck.push(dealerCardDealt2);
 
+    // Hack to get the blank card to display.. some bug was after a blackjack.. 
+    // the blank card would not appear
+    displayABlankCard(coordinates['dealerCard2'], 'dealer-blank');  
     // Checking if anyone got blackjack on the deal
     if (getScore(dealerDeck) == 21 && getScore(playerDeck) == 21){
       winner = 'blackjack all around... tie';
-      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer2');
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
+      blackjack = true;
       gameOver();
     } else if (getScore(dealerDeck) == 21) {
       winner ='Blackjack for dealer, dealer wins';
-      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer2');
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer');
       scoreArray[1] += 1;
+      blackjack = true;
       gameOver();
     } else if (getScore(playerDeck) == 21) {
       winner = 'Blackjack for player, player wins';
-      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer2'); 
+      displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer'); 
       totalScoreArray[0] += 1;
+      blackjack = true;
       gameOver();
     } else {
       // If no blackjack on deal... do this..
       dealerDeck.pop();
-      displayABlankCard(coordinates['dealerCard2'], 'dealer-blank');  
     }
 
     // Update the page so the jQuery and svg will show
     $("#cont").html($("#cont").html());
+   
 
     var hitMeButton = $("#hit");
-    var stayButton  = $("#stay");    
-
+    var stayButton  = $("#stay");
     // Hit me actions
     hitMeButton.on("click",function(){
+      // Checking to see if blackjack has occured.. this will make the button 
+      // do nothing when clicked
+      if (blackjack) {
+        return
+      } 
       // else update coordinates object with new card and display it
       var playerCardDealHit = shoeDeck.pop();
       playerDeck.push(playerCardDealHit);
@@ -401,6 +412,7 @@ $(function(){
         console.log(updateScore)
         totalScoreArray[0] += updateScore[0];
         totalScoreArray[1] += updateScore[1];
+        hitMeButton.off("click");
         showRedealButton();       
       } else if (getScore(playerDeck) > 21) {
         bust = true;
@@ -410,13 +422,20 @@ $(function(){
         hitMeButton.off("click");
         stayButton.off("click");
         gameOver = true;
-        totalScoreArray[1] += 1;
+        var updateScore = getWinner(winner, getScore(playerDeck), getScore(dealerDeck));
+        updateScore[1] += totalScoreArray[1]
+        hitMeButton.off("click");
         showRedealButton();
       }
     })
   
     // Stay button actions
     stayButton.on("click", function() {     
+      // Checking to see if blackjack has occured.. this will make the button 
+      // do nothing when clicked
+      if (blackjack) {
+        return
+      } 
       stay = true;
       dealerDeck.push(dealerCardDealt2);
       displayACard(dealerCardDealt2, coordinates['dealerCard2'], 'dealer'); 
@@ -433,8 +452,6 @@ $(function(){
 
     // This should be called accordingly when a hand ends
     function gameOver() {
-      hitMeButton.off("click");
-      stayButton.off("click");
       document.getElementsByClassName("dealer-score")[0].childNodes[0].nodeValue = getScore(dealerDeck);      
       showRedealButton();
     }
@@ -487,7 +504,10 @@ $(function(){
   $(".title").append(startGameButton);
   // $("body").html($("body").html());
   startGameButton.on("click", function(event) {
-    playGame(shuffle(splitDeckToSuits(deckOfCards())), [0,0]);
+    var shuffledDeck = splitDeckToSuits(deckOfCards());
+    shuffledDeck.push(['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11])
+    shuffle(shuffledDeck)
+    playGame(shuffledDeck, [0,0]);
   })
 
 })
