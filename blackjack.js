@@ -192,6 +192,50 @@ $(function(){
     return $('svg').append(s);
   }
 
+  function displayTotalScore(score, title, coords, scoreClass) {
+
+    var xcoordbg = coords['xCoordBG'];
+    var ycoordbg = coords['yCoordBG'];
+    var xcoordtext = coords['xCoordText'];
+    var ycoordtext = coords['yCoordText'];
+    var xcoordheader = coords['xCoordHeader'];
+    var ycoordheader = coords['yCoordHeader'];
+
+    // Makes a rectangle in svg as the base of the card
+    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttributeNS(null,'height','75');
+    rect.setAttributeNS(null,'width','50');
+    rect.setAttributeNS(null,'x', xcoordbg);
+    rect.setAttributeNS(null,'y', ycoordbg);
+    rect.setAttributeNS(null, 'rx', '5');
+    rect.setAttributeNS(null, 'ry', '5');
+    rect.setAttributeNS(null, 'fill', '#FFFFFF');
+    rect.setAttributeNS(null, 'stroke', '#000000');
+    rect.setAttributeNS(null, 'stroke-width', '4');
+    rect.setAttributeNS(null, 'visibility', 'visible');
+    rect.setAttributeNS(null, 'class', scoreClass + '-total-score-bg');
+
+    var s = document.createElementNS('http://www.w3.org/2000/svg','text');
+    s.textContent = score;
+    s.setAttributeNS(null, 'class', scoreClass + '-total-score-number');
+    s.setAttributeNS(null, 'x', xcoordtext);
+    s.setAttributeNS(null, 'y', ycoordtext);
+    s.setAttributeNS(null, 'font-size', '20');
+    s.setAttributeNS(null, 'fill', 'black');
+    s.setAttributeNS(null, 'visibility', 'visible');
+
+    var header = document.createElementNS('http://www.w3.org/2000/svg','text');
+    header.textContent = title;
+    header.setAttributeNS(null, 'class', scoreClass + '-total-score-number');
+    header.setAttributeNS(null, 'x', xcoordheader);
+    header.setAttributeNS(null, 'y', ycoordheader);
+    header.setAttributeNS(null, 'font-size', '16');
+    header.setAttributeNS(null, 'fill', 'black');
+    header.setAttributeNS(null, 'visibility', 'visible');
+    $("svg").append(rect);
+    $("svg").append(s);
+    $("svg").append(header);
+  }
   function getScore(cardArray) {
     // This is just used to grab a score... It doesnt like when there are 2 aces
     // and one other card.. it messed up once
@@ -311,7 +355,8 @@ $(function(){
                        playerCard2: {xCoordCard: 140,  yCoordCard: 160, xCoordNum: 144,  yCoordNum: 180, xCoordSuit: 150,  yCoordSuit: 180},
                        hitMe:       {xCoordBG: 70,  yCoordBG: 280, xCoordText: 77,  yCoordText: 308},
                        stay:        {xCoordBG: 150, yCoordBG: 280, xCoordText: 163, yCoordText: 308},
-                       reDeal:      {xCoordBG: 220, yCoordBG: 280, xCoordText: 230, yCoordText: 308},
+                       playerTotalScoordinates: {xCoordBG: 220, yCoordBG: 280, xCoordText: 235, yCoordText: 350, xCoordHeader: 225, yCoordHeader: 300},
+                       dealerTotalScoordinates: {xCoordBG: 290, yCoordBG: 280, xCoordText: 305, yCoordText: 350, xCoordHeader: 295, yCoordHeader: 300},
                        playerScoordinates: {xCoord: 20,  yCoord: 210},
                        dealerScoordinates: {xCoord: 20,  yCoord: 70},
                        newGameCoordinates: {xCoord: 220, yCoord: 280, xCoordText: 230, yCoordText: 308}};
@@ -338,6 +383,8 @@ $(function(){
 
     displayScore(playerDeck, coordinates['playerScoordinates'], 'player-score');
     displayScore(dealerDeck, coordinates['dealerScoordinates'], 'dealer-score');
+    displayTotalScore(scoreArray[0], 'player', coordinates['playerTotalScoordinates'], 'player')
+    displayTotalScore(scoreArray[1], 'dealer', coordinates['dealerTotalScoordinates'], 'dealer')
     // Going to check if anyone got blackjack on the deal
     dealerDeck.push(dealerCardDealt2);
 
@@ -423,7 +470,7 @@ $(function(){
         stayButton.off("click");
         gameOver = true;
         var updateScore = getWinner(winner, getScore(playerDeck), getScore(dealerDeck));
-        updateScore[1] += totalScoreArray[1]
+        totalScoreArray[1] += updateScore[1]
         hitMeButton.off("click");
         showRedealButton();
       }
@@ -490,9 +537,7 @@ $(function(){
         document.getElementsByClassName("dealer-number")[0].remove();
         document.getElementsByClassName("dealer2-number")[0].remove();
       }      
-
     }
-
   }
   // I need a start the game button.. maybe using jqueery
   startGameButton = $("<div id='start-game-button'></div>");
@@ -504,9 +549,7 @@ $(function(){
   $(".title").append(startGameButton);
   // $("body").html($("body").html());
   startGameButton.on("click", function(event) {
-    var shuffledDeck = splitDeckToSuits(deckOfCards());
-    shuffledDeck.push(['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',12],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11],['heart',11])
-    shuffle(shuffledDeck)
+    var shuffledDeck = shuffle(splitDeckToSuits(deckOfCards()));
     playGame(shuffledDeck, [0,0]);
   })
 
