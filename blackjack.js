@@ -1,5 +1,8 @@
 $(function(){
-  var totalScore = [0,0];
+  
+  // Initialize an svg variable
+  var svg = $("svg");
+  
   function deckOfCards() {
     // This function just creates an initial deck
     // of 52 cards and returns the array of all cards
@@ -15,39 +18,26 @@ $(function(){
     // into 4 sections and assign each card
     // a suit and give it a number 0 through
     // 13 and return it as an array
-    var deckSplitIntoArrayOfSuits = [];
     var deckJoinedWithSuits = [];
-    var hearts    = [];
-    var diamonds  = [];
-    var spades    = [];
-    var clubs     = [];
 
     deck.forEach(function(element) {
       suit = Math.floor(element / 13);
       switch (suit) {
         case 0:
-          hearts.push(['heart', element%13]);
+          deckJoinedWithSuits.push(['heart', element%13]);
           break;     
         case 1:
-          diamonds.push(['diamond', element%13]);
+          deckJoinedWithSuits.push(['diamond', element%13]);
           break;
         case 2:
-          spades.push(['spade', element%13]);
+          deckJoinedWithSuits.push(['spade', element%13]);
           break;
         case 3:
-          clubs.push(['club', element%13]);
+          deckJoinedWithSuits.push(['club', element%13]);
           break; 
       }
     })
-    deckSplitIntoArrayOfSuits.push(hearts);
-    deckSplitIntoArrayOfSuits.push(diamonds);
-    deckSplitIntoArrayOfSuits.push(spades);
-    deckSplitIntoArrayOfSuits.push(clubs);
-    deckSplitIntoArrayOfSuits.map(function(element) {
-      element.forEach(function(singleCard) {
-        deckJoinedWithSuits.push(singleCard);
-      })
-    })
+
     // returns an array of arrays size of 2.. [[suit, number],[suit,number]]
     return deckJoinedWithSuits;
   }
@@ -60,16 +50,14 @@ $(function(){
   }
 
 
-  // Initialize an svg variable
-  var svg = $("svg");
 
   function makeSvgSuit(suit,xcoord, ycoord, cardClass) {
 
     // This is what stack overflow said to do in order to make an svg work with
     // jquery and appendance.. but appends the image to the card
     var img = document.createElementNS('http://www.w3.org/2000/svg','image');
-    img.setAttributeNS(null,'height','30');
-    img.setAttributeNS(null,'width','30');
+    img.setAttributeNS(null,'height','15');
+    img.setAttributeNS(null,'width','15');
     img.setAttributeNS('http://www.w3.org/1999/xlink','href','./images/' + suit + '.png');
     img.setAttributeNS(null,'x', xcoord);
     img.setAttributeNS(null,'y', ycoord);
@@ -81,8 +69,8 @@ $(function(){
   function makeSvgCard(xcoord, ycoord, cardClass) {
     // Makes a rectangle in svg as the base of the card
     var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttributeNS(null,'height','70');
-    rect.setAttributeNS(null,'width','50');
+    rect.setAttributeNS(null,'height','50');
+    rect.setAttributeNS(null,'width','35');
     rect.setAttributeNS(null,'x', xcoord);
     rect.setAttributeNS(null,'y', ycoord);
     rect.setAttributeNS(null, 'rx', '5');
@@ -102,7 +90,7 @@ $(function(){
     num.setAttributeNS(null, 'class', cardClass + '-number');
     num.setAttributeNS(null, 'x', xcoord);
     num.setAttributeNS(null, 'y', ycoord);
-    num.setAttributeNS(null, 'font-size', '17');
+    num.setAttributeNS(null, 'font-size', '9');
     num.setAttributeNS(null, 'fill', 'black');
     num.setAttributeNS(null, 'visibility', 'visible');
 
@@ -131,7 +119,7 @@ $(function(){
 
     makeSvgCard(xcard,ycard,cardClass);
     makeSvgNumber(card, xnum, ynum, cardClass);
-    makeSvgNumber(card, xnum+28, ynum+40, cardClass + '2');
+    makeSvgNumber(card, xnum+20, ynum+30, cardClass + '2');
     makeSvgSuit(singleCardArray[0], xsuit, ysuit, cardClass);
   }
   
@@ -153,12 +141,12 @@ $(function(){
     makingTheSvg(card, xCoordCard, yCoordCard, xCoordNumber1, yCoordNumber1, xCoordSuit, yCoordSuit, cardClass);
   }
 
-  function displayAButton(coords, text, id) {
+  function displayAButton(coords, text, klass) {
     // This is displaying basic buttons since we dont refresh the screen untill
     // after these are displayed, we can use jQuery.
 
-    var buttonBackground = $('<rect id=' + id + ' x=' + coords['xCoordBG'] + ' y=' + coords['yCoordBG'] + ' rx="20" ry="20" width="50" height="50" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>');
-    var buttonText       = $('<text x=' + coords['xCoordText'] + ' y=' + coords['yCoordText'] + ' font-size="13" fill="black" stroke="#000000" stroke-width="1">' + text + '</text>');
+    var buttonBackground = $('<rect class=' + klass + ' x=' + coords['xCoordBG'] + ' y=' + coords['yCoordBG'] + ' rx="10" ry="10" width="30" height="30" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>');
+    var buttonText       = $('<text class=' + klass + ' x=' + coords['xCoordText'] + ' y=' + coords['yCoordText'] + ' font-size="9" fill="black" stroke="#000000" stroke-width="1">' + text + '</text>');
     svg.append(buttonBackground);
     svg.append(buttonText);
   }
@@ -170,7 +158,7 @@ $(function(){
 
     var xcard = coordinates['xCoordCard'];
     var ycard = coordinates['yCoordCard'];
-    var b = $('<rect class=' + className + ' x=' + xcard + ' y=' + ycard + ' rx="5" ry="5" width="50" height="70" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>');
+    var b = $('<rect class=' + className + ' x=' + xcard + ' y=' + ycard + ' rx="5" ry="5" width="35" height="50" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>');
     svg.append(b);
   }
 
@@ -246,6 +234,8 @@ $(function(){
       cardNumbers.push(element[1]);
     })
     cardNumbers.sort(function(a, b){return a-b})
+    
+    // Need to check if more than one ace and add to total accodingly.
     cardNumbers.forEach(function(element) {
       var cardWorth = element + 2;
       if ( cardWorth > 10 && cardWorth < 14) {
@@ -349,12 +339,12 @@ $(function(){
     console.log('score ' + scoreArray);
 
     // Made a coordinate system in case I want to move stuff..
-    var coordinates = {dealerCard1: {xCoordCard: 80,   yCoordCard: 25,  xCoordNum: 84,   yCoordNum: 45,  xCoordSuit: 90,   yCoordSuit: 45},
-                       dealerCard2: {xCoordCard: 140,  yCoordCard: 25,  xCoordNum: 144,  yCoordNum: 45,  xCoordSuit: 150,  yCoordSuit: 45},
-                       playerCard1: {xCoordCard: 80,   yCoordCard: 160, xCoordNum: 84,   yCoordNum: 180, xCoordSuit: 90,   yCoordSuit: 180},
-                       playerCard2: {xCoordCard: 140,  yCoordCard: 160, xCoordNum: 144,  yCoordNum: 180, xCoordSuit: 150,  yCoordSuit: 180},
-                       hitMe:       {xCoordBG: 70,  yCoordBG: 280, xCoordText: 77,  yCoordText: 308},
-                       stay:        {xCoordBG: 150, yCoordBG: 280, xCoordText: 163, yCoordText: 308},
+    var coordinates = {dealerCard1: {xCoordCard: 110,   yCoordCard: 45,  xCoordNum: 115,   yCoordNum: 58,  xCoordSuit: 120,   yCoordSuit: 63},
+                       dealerCard2: {xCoordCard: 150,  yCoordCard: 45,  xCoordNum: 155,  yCoordNum: 58,  xCoordSuit: 160,  yCoordSuit: 63},
+                       playerCard1: {xCoordCard: 110,   yCoordCard: 140, xCoordNum: 115,   yCoordNum: 153, xCoordSuit: 120,   yCoordSuit: 158},
+                       playerCard2: {xCoordCard: 150,  yCoordCard: 140, xCoordNum: 155,  yCoordNum: 153, xCoordSuit: 160,  yCoordSuit: 158},
+                       hitMe:       {xCoordBG: 112,  yCoordBG: 210, xCoordText: 120,  yCoordText: 228},
+                       stay:        {xCoordBG: 153, yCoordBG: 210, xCoordText: 160, yCoordText: 228},
                        playerTotalScoordinates: {xCoordBG: 220, yCoordBG: 280, xCoordText: 235, yCoordText: 350, xCoordHeader: 225, yCoordHeader: 300},
                        dealerTotalScoordinates: {xCoordBG: 290, yCoordBG: 280, xCoordText: 305, yCoordText: 350, xCoordHeader: 295, yCoordHeader: 300},
                        playerScoordinates: {xCoord: 20,  yCoord: 210},
@@ -374,7 +364,7 @@ $(function(){
     
     var dealerCardDealt2 = shoeDeck.pop();
 
-    displayAButton(coordinates['hitMe'], 'Hit me', 'hit');
+    displayAButton(coordinates['hitMe'], 'Hit', 'hit');
     displayAButton(coordinates['stay'], 'Stay', 'stay')
 
     playerDeck.push(playerCardDealt1);
@@ -418,8 +408,8 @@ $(function(){
     $("#cont").html($("#cont").html());
    
 
-    var hitMeButton = $("#hit");
-    var stayButton  = $("#stay");
+    var hitMeButton = $(".hit");
+    var stayButton  = $(".stay");
     // Hit me actions
     hitMeButton.on("click",function(){
       // Checking to see if blackjack has occured.. this will make the button 
@@ -439,7 +429,7 @@ $(function(){
       var currentPlayerCardCoordinates = {};
       for(key in previousPlayerCardCoordinates) {
         if (key[0] == 'x') {
-          currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key] + 60;
+          currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key] + 40;
         } else {
           currentPlayerCardCoordinates[key] = previousPlayerCardCoordinates[key];
         }
@@ -547,10 +537,11 @@ $(function(){
   redealButton.append(redealButtonText);
   startGameButton.append(startGameText);
   $(".title").append(startGameButton);
-  // $("body").html($("body").html());
-  startGameButton.on("click", function(event) {
-    var shuffledDeck = shuffle(splitDeckToSuits(deckOfCards()));
-    playGame(shuffledDeck, [0,0]);
-  })
+  var shuffledDeck = shuffle(splitDeckToSuits(deckOfCards()));
+  playGame(shuffledDeck, [0,0]);
+  // I need to move the upper 2 lines down to make start game button actually
+  // start the game
+  // startGameButton.on("click", function(event) {
+  // })
 
 })
